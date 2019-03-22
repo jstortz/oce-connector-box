@@ -1,0 +1,846 @@
+---
+swagger: "2.0"
+info:
+  description: "The REST API for Connector integration enables you to interact with\
+    \ connectors for the cloud stores. It will enable customer to reuse the content\
+    \ they’ve already created,manage centrally in CEC."
+  version: "2019.01.01"
+  title: "REST API for Connector Integration"
+  x-summary: "The REST API for Connector integration enables you to interact with\
+    \ connectors for the cloud stores. It will enable customer to reuse the content\
+    \ they’ve already created,manage centrally in CEC."
+tags:
+- name: "APIResource"
+  description: "Cloud store connector <code>api</code> resource definition."
+- name: "AuthorizationResource"
+  description: "Cloud store connector <code>authorization</code> resource definition"
+- name: "ContentResource"
+  description: "Cloud store connector <code>content</code> resource definition. This\
+    \ resource represents the actual content (the bytes of the files) stored in the\
+    \ CS service."
+- name: "ServerResource"
+  description: "Cloud store connector <code>server</code> resource definition."
+- name: "FilesystemResource"
+  description: "Cloud store connector <code>filesystem</code> resource definition.\
+    \ This resource represents meta data about the Cloud store file system and its\
+    \ contents."
+schemes:
+- "https"
+- "http"
+consumes:
+- "application/json"
+produces:
+- "application/json"
+- "text/html"
+paths:
+  /api:
+    get:
+      tags:
+      - "APIResource"
+      summary: "Get an array of all implemented API versions."
+      operationId: "apiGET"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "Successful operation."
+          schema:
+            $ref: "#/definitions/VersionResponseInfo"
+      x-swagger-router-controller: "APIResource"
+  /api/{version}/authorization/authorizationURLs:
+    post:
+      tags:
+      - "AuthorizationResource"
+      summary: "Create an authorization URL and related information. This API will\
+        \ need to be implemented if remote store suppots oauth style of authorization"
+      operationId: "apiVersionAuthorizationAuthorizationURLsPOST"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "X-CEC-clientId"
+        in: "header"
+        description: "Connector Framework will pass all the custom properties and\
+          \ proxy values via Http headers."
+        required: true
+        type: "string"
+      - name: "X-CEC-clientSecret"
+        in: "header"
+        description: "Version value of the API for example the current release version\
+          \ is v1"
+        required: true
+        type: "string"
+      - name: "version"
+        in: "path"
+        description: "Version value of the API for example the current release version\
+          \ is v1"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "The request body defines the details of the request."
+        required: false
+        schema:
+          $ref: "#/definitions/CreateAuthorizationRequestInfo"
+      responses:
+        200:
+          description: "Successful operation."
+          schema:
+            $ref: "#/definitions/CreateAuthorizationResponseInfo"
+      x-swagger-router-controller: "AuthorizationResource"
+  /api/{version}/authorization/completedAuthorizations:
+    post:
+      tags:
+      - "AuthorizationResource"
+      summary: "To complete the oauth based authorization. This API will need to be\
+        \ implemented if remote store suppots oauth style of authorization"
+      operationId: "apiVersionAuthorizationCompletedAuthorizationsPOST"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "X-CEC-clientId"
+        in: "header"
+        description: "Client Id for the application"
+        required: true
+        type: "string"
+      - name: "X-CEC-clientSecret"
+        in: "header"
+        description: "Client Secret for the application"
+        required: true
+        type: "string"
+      - name: "X-CEC-code"
+        in: "header"
+        description: "Access Code for the application"
+        required: true
+        type: "string"
+      - name: "version"
+        in: "path"
+        description: "Version value of the API for example the current release version\
+          \ is v1"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "The request body defines the details of the request."
+        required: true
+        schema:
+          $ref: "#/definitions/CompleteAuthorizationRequestInfo"
+      responses:
+        200:
+          description: "Successful operation."
+          schema:
+            $ref: "#/definitions/CompleteAuthorizationResponseInfo"
+      x-swagger-router-controller: "AuthorizationResource"
+  /api/{version}/authorization/basicAuthorizations:
+    post:
+      tags:
+      - "AuthorizationResource"
+      summary: "To verify the credential for basic authorization. This API will need\
+        \ to be implemented if remote store suppots Basic authentication"
+      operationId: "apiVersionAuthorizationBasicAuthorizationsPOST"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "headers"
+        in: "header"
+        description: "Connector Framework will pass all the custom properties and\
+          \ proxy values via Http headers."
+        required: true
+        type: "string"
+      - name: "version"
+        in: "path"
+        description: "Version value of the API for example the current release version\
+          \ is v1"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Successful operation."
+      x-swagger-router-controller: "AuthorizationResource"
+  /api/{version}/content:
+    get:
+      tags:
+      - "ContentResource"
+      summary: "Get the content of a filesystem object.The response entity is the\
+        \ content of the file. The response should include the following headers:\
+        \ Content-Length -> set to the entity length or -1 if unknown, Content-Type\
+        \ -> set to the content type or <code>application/octet-stream</code> if a\
+        \ more accurate type is not possible, Content-Disposition -> set to disposition\
+        \ type of attachment and include a filename parameter (for example,Content-Disposition:\
+        \ attachment; filename=''meeting agenda.doc''). Note that file names with\
+        \ spaces must be quoted. See RFC 6266 for details about the format and encoding\
+        \ of the header."
+      operationId: "apiVersionContentGET"
+      produces:
+      - "*/*"
+      parameters:
+      - name: "uri"
+        in: "query"
+        description: "URI of the filesystem object default value if empty is root"
+        required: false
+        type: "string"
+      - name: "version"
+        in: "path"
+        description: "Version value of the API for example the current release version\
+          \ is v1"
+        required: true
+        type: "string"
+      - name: "X-CEC-accessToken"
+        in: "header"
+        description: "Access token"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Successful operation. It will return an InputStream for reading\
+            \ the bytes of the file"
+        403:
+          description: "FILESYSTEM_OBJECT_NOT_FOUND or OAUTH_NOT_AUTHORIZED"
+      x-swagger-router-controller: "ContentResource"
+  /api/{version}/content/getthumbnail:
+    get:
+      tags:
+      - "ContentResource"
+      summary: "Get the content of a thumbnail of the file.The response entity is\
+        \ the content of the thumbnail. The response should include the following\
+        \ headers: Content-Length -> set to the entity length or -1 if unknown, Content-Type\
+        \ -> set to the content type or <code>application/octet-stream</code> if a\
+        \ more accurate type is not possible, Content-Disposition -> set to disposition\
+        \ type of attachment and include a filename parameter (for example,Content-Disposition:\
+        \ attachment; filename=''meeting agenda.doc''). Note that file names with\
+        \ spaces must be quoted. See RFC 6266 for details about the format and encoding\
+        \ of the header."
+      operationId: "apiVersionContentGetthumbnailGET"
+      produces:
+      - "*/*"
+      parameters:
+      - name: "uri"
+        in: "query"
+        description: "URI of the filesystem object. The object's unique identifier\
+          \ from a string representation."
+        required: true
+        type: "string"
+      - name: "version"
+        in: "path"
+        description: "Version value of the API for example the current release version\
+          \ is v1"
+        required: true
+        type: "string"
+      - name: "headers"
+        in: "header"
+        description: "Connector Framework will pass all the custom properties and\
+          \ proxy values via Http headers."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Successful operation. It will return an InputStream for reading\
+            \ the bytes of the thumbnail"
+        403:
+          description: "FILESYSTEM_OBJECT_NOT_FOUND or OAUTH_NOT_AUTHORIZED"
+      x-swagger-router-controller: "ContentResource"
+  /api/{version}/server:
+    get:
+      tags:
+      - "ServerResource"
+      summary: "Get the server description."
+      operationId: "apiVersionServerGET"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "version"
+        in: "path"
+        description: "Version value for example the current release version is v1"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Successful operation."
+          schema:
+            $ref: "#/definitions/ServerInfo"
+      x-swagger-router-controller: "ServerResource"
+  /api/{version}/filesystem:
+    post:
+      tags:
+      - "FilesystemResource"
+      summary: "Return meta data about an object in remote files system"
+      operationId: "apiVersionFilesystemPOST"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "headers"
+        in: "header"
+        description: "Connector Framework will pass all the custom properties and\
+          \ proxy values via Http headers."
+        required: true
+        type: "string"
+      - name: "version"
+        in: "path"
+        description: "Version value of the API for example the current release version\
+          \ is v1"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "The request body defines the details of the request."
+        required: true
+        schema:
+          $ref: "#/definitions/FileSystemRequestInfo"
+      responses:
+        200:
+          description: "Successful operation."
+          schema:
+            $ref: "#/definitions/FileSystemResponseInfo"
+      x-swagger-router-controller: "FilesystemResource"
+definitions:
+  VersionResponseInfo:
+    type: "array"
+    description: "The response body includes information about the API versions operation"
+    items:
+      type: "string"
+  CreateAuthorizationRequestInfo:
+    type: "object"
+    properties:
+      redirectURL:
+        type: "string"
+        description: "The redirect URL to which the authorization service should redirect\
+          \ when finished. For example, the URL of a specific page served by the CEC\
+          \ server."
+    description: "Authorization-request creation info."
+    example:
+      redirectURL: "redirectURL"
+  CreateAuthorizationResponseInfo:
+    type: "object"
+    properties:
+      authorizationURL:
+        type: "string"
+        description: "The cloud storage URL to which the end-user should be directed\
+          \ in order to authorize access by the \tCEC application."
+      fieldValueMap:
+        $ref: "#/definitions/CreateAuthorizationResponseInfo_fieldValueMap"
+    description: "Information about the authorization-request."
+    example:
+      authorizationURL: "authorizationURL"
+      fieldValueMap:
+        name: "name"
+        value: "value"
+  CompleteAuthorizationRequestInfo:
+    type: "object"
+    properties:
+      redirectURL:
+        type: "string"
+        description: "The redirect URL to which the authorization service should redirect\
+          \ when finished. This will be the same value that was passed in the associated\
+          \ CreateAuthorizationRequestInfo."
+    description: "Completed-authorization creation info."
+    example:
+      redirectURL: "redirectURL"
+  CompleteAuthorizationResponseInfo:
+    type: "object"
+    properties:
+      authorized:
+        type: "boolean"
+        description: "Whether or not the connector is now authorized. Set to true\
+          \ if the end-user granted authorization to the connector, set to false if\
+          \ authorization was denied."
+      authorizedUserDisplayName:
+        type: "string"
+        description: "The authorized user's display name, if available. May be null."
+      authorizedUserEmailAddress:
+        type: "string"
+        description: "The authorized user's email address, if available. May be null."
+      authorizedUserPictureURL:
+        type: "string"
+        description: "The authorized user's picture URL, if available. May be null."
+      fieldValueMap:
+        $ref: "#/definitions/CreateAuthorizationResponseInfo_fieldValueMap"
+    description: "Completed-authorization information."
+    example:
+      authorizedUserEmailAddress: "authorizedUserEmailAddress"
+      authorized: true
+      fieldValueMap:
+        name: "name"
+        value: "value"
+      authorizedUserPictureURL: "authorizedUserPictureURL"
+      authorizedUserDisplayName: "authorizedUserDisplayName"
+  ServerInfo:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        description: "The name of this server for the end-user, in English. Must be\
+          \ set. For example Dropbox."
+      nameLocalizations:
+        type: "array"
+        description: "The name of this server for the end-user in additional languages.\
+          \ May be unset/empty."
+        items:
+          $ref: "#/definitions/LocalizationInfo"
+      version:
+        type: "string"
+        description: "A short value describing the version or release number of the\
+          \ connector, in English. This value will be exposed to administrators. May\
+          \ be unset/empty."
+      about:
+        type: "string"
+        description: "Additional information about the connector, in English. This\
+          \ can be used to provide information about the connector author/vendor name,\
+          \ support or contact information, copyright or licensing terms, etc. The\
+          \ content should be in plain text (no HTML markup) and use the line feed\
+          \ (LF, '\n', 0x0A, 10 in decimal) character as a line separator. This value\
+          \ will be exposed to administrators. May be unset/empty."
+      aboutLocalizations:
+        type: "array"
+        description: "Information about the connector in additional languages."
+        items:
+          $ref: "#/definitions/LocalizationInfo"
+      authenticationType:
+        type: "string"
+        description: "If this is set to OAUTH, operations on AuthorizationResource\
+          \ will be used to acquire access to the end-user's data. If  <code>authenticationType</code>\
+          \ is set to OAUTH, the connector must not define any custom fields that\
+          \ are user-settable (<code>FieldInfo.userSettable</code> may not be set\
+          \ to true)."
+        enum:
+        - "OAUTH"
+        - "BASIC_AUTH"
+        - "NO_AUTH"
+      pickerType:
+        type: "string"
+        description: "Choose appropriate picker type based on the connector."
+        enum:
+        - "COMMON"
+        - "CUSTOM"
+        - "GOOGLE"
+        - "ONEDRIVE"
+        - "DROPBOX"
+      enableMultiUserCopyBack:
+        type: "boolean"
+        description: "Whether or not the connector supports the copy back feature\
+          \ across multiple users. In order for the copy back feature to be supported\
+          \ across multiple users, the connector must be able to tell if a request\
+          \ to update a file (using ContentResource.updateContent) will modify the\
+          \ same file regardless of which end-user requests the update. This typically\
+          \ requires the file URI to be globally unique across all users that have\
+          \ access to the file."
+      maxUploadSize:
+        type: "number"
+        description: "Maximum content length that can be uploaded to the Cloud Storage\
+          \ provider (in bytes). Set to -1 for no limit. Set to 0 to disable uploads."
+      fields:
+        $ref: "#/definitions/FieldInfo"
+      supportedConnectorTypes:
+        type: "array"
+        description: "List of supported connector types. COPY and LINK connector types\
+          \ are supported by CS framework. connector should set the supported types."
+        items:
+          type: "string"
+          enum:
+          - "COPY"
+          - "LINK"
+      proprietorName:
+        type: "string"
+        description: "Proprietor Name for example Oracle."
+      serviceProviderName:
+        type: "string"
+        description: "External service provider name for example Dropbox"
+      nativeAppInfos:
+        type: "array"
+        description: "List of native application information"
+        items:
+          $ref: "#/definitions/NativeAppInfo"
+    description: "Cloud store connector Server Info."
+    example:
+      nameLocalizations:
+      - localizedString: "localizedString"
+        locale: "locale"
+      - localizedString: "localizedString"
+        locale: "locale"
+      pickerType: "COMMON"
+      maxUploadSize: 0.80082819046101150206595775671303272247314453125
+      about: "about"
+      supportedConnectorTypes:
+      - "COPY"
+      - "COPY"
+      version: "version"
+      proprietorName: "proprietorName"
+      serviceProviderName: "serviceProviderName"
+      nativeAppInfos:
+      - applicationScheme: "applicationScheme"
+        applicationLocator: "applicationLocator"
+        platform: "platform"
+        supported: "supported"
+      - applicationScheme: "applicationScheme"
+        applicationLocator: "applicationLocator"
+        platform: "platform"
+        supported: "supported"
+      name: "name"
+      enableMultiUserCopyBack: true
+      authenticationType: "OAUTH"
+      fields:
+        authorizationURLParameter: true
+        datatype: "PASSWORD"
+        descriptionLocalizations:
+        - localizedString: "localizedString"
+          locale: "locale"
+        - localizedString: "localizedString"
+          locale: "locale"
+        siteSettable: true
+        labelLocalizations:
+        - localizedString: "localizedString"
+          locale: "locale"
+        - localizedString: "localizedString"
+          locale: "locale"
+        description: "description"
+        ID: "ID"
+        label: "label"
+        connectorSettable: true
+        userSettable: true
+        required: true
+      aboutLocalizations:
+      - localizedString: "localizedString"
+        locale: "locale"
+      - localizedString: "localizedString"
+        locale: "locale"
+  FieldInfo:
+    type: "object"
+    properties:
+      ID:
+        type: "string"
+        description: "Field identifier that is unique within the scope of this Cloud\
+          \ store connector Server. Must be set. The identifier must only have alphanumeric\
+          \ and underscore characters (a-z, A-Z, 0-9, and _). The identifier must\
+          \ be case-insensitive as it will be used in the generation of custom HTTP\
+          \ request header names, which are case-insensitive."
+      datatype:
+        type: "string"
+        description: "If the field a password? then client interfaces will conceal\
+          \ actual the value. Determines whether the field should be rendered as a\
+          \ text box (String) or check box (Boolean) for the end user. If false, then\
+          \ the field value will be stored and retrieved as String and the client\
+          \ will render this field as a text box and populate the String value. If\
+          \ true, then the field value will be stored and retrieved as Boolean and\
+          \ the client will render this field as a check box and populate the Boolean\
+          \ value."
+        enum:
+        - "PASSWORD"
+        - "STRING"
+        - "BOOLEAN"
+      siteSettable:
+        type: "boolean"
+        description: "Can a site value or default value be set by the administrator?\
+          \ If true, the field will be settable on the administration page for this\
+          \ service."
+      userSettable:
+        type: "boolean"
+        description: "Can an end-user set or override the value? If true, the end-user\
+          \ will be able to configure a value for this field."
+      connectorSettable:
+        type: "boolean"
+        description: "Whether or not the connector itself set the value. If true,\
+          \ the connector web service can set the value as part of is response to\
+          \ certain operations. The value is maintained per-user."
+      authorizationURLParameter:
+        type: "boolean"
+        description: "During OAuth style authorization, when the user approves the\
+          \ application,then the service provider may redirect the browser back to\
+          \ the CEC web application and provide an authorization code and/or other\
+          \ data as URL parameters. By defining a custom field with the <code>authorizationParameter</code>\
+          \ boolean set to true, the connector is requesting that authorization URL\
+          \ parameter with the same ID as this field be sent to the connector as a\
+          \ custom field value."
+      label:
+        type: "string"
+        description: "An end-user label for this field in English. For example, User\
+          \ ID. Must be set."
+      labelLocalizations:
+        type: "array"
+        description: "Labels for this field in additional languages. May be unset/empty."
+        items:
+          $ref: "#/definitions/LocalizationInfo"
+      description:
+        type: "string"
+        description: "An end-user description of this field in English. For example,\
+          \ 'Your 6-digit Campero user identifier'  May be unset/empty."
+      descriptionLocalizations:
+        type: "array"
+        description: "Labels for this field in additional languages. May be unset/empty."
+        items:
+          $ref: "#/definitions/LocalizationInfo"
+      required:
+        type: "boolean"
+        description: "Determines whether the field should be marked as required. If\
+          \ true, an asterisk displays next to the field name."
+    description: "List of field information objects. The objects should be in the\
+      \ order that they should be displayed to the user. May be unset/empty."
+    example:
+      authorizationURLParameter: true
+      datatype: "PASSWORD"
+      descriptionLocalizations:
+      - localizedString: "localizedString"
+        locale: "locale"
+      - localizedString: "localizedString"
+        locale: "locale"
+      siteSettable: true
+      labelLocalizations:
+      - localizedString: "localizedString"
+        locale: "locale"
+      - localizedString: "localizedString"
+        locale: "locale"
+      description: "description"
+      ID: "ID"
+      label: "label"
+      connectorSettable: true
+      userSettable: true
+      required: true
+  LocalizationInfo:
+    type: "object"
+    properties:
+      locale:
+        type: "string"
+        description: "locale should be a two-letter ISO 639 language code or a two-letter\
+          \ ISO 639 language code followed by an underscore and a two-letter ISO 3166\
+          \ country code. Must be set. As of this writing, the CEC server supports\
+          \ the following language/country combinations: cs, da, de, en, es, fi, fr,\
+          \ fr_CA, hu, it, ja, ko, nl, no, pl, pt_BR, ru, sv, tr, zh_CN, zh_TW,"
+      localizedString:
+        type: "string"
+        description: "The localizedString is the string in the specified locale. Must\
+          \ be set."
+    description: "Cloud store connector Server Localization Info element type."
+    example:
+      localizedString: "localizedString"
+      locale: "locale"
+  NativeAppInfo:
+    type: "object"
+    properties:
+      platform:
+        type: "string"
+        description: "Platform Name"
+      supported:
+        type: "string"
+        description: "Whether the platform is supported or not."
+      applicationScheme:
+        type: "string"
+        description: "The application scheme. May be unset/empty."
+      applicationLocator:
+        type: "string"
+        description: "Native application download URL. This value can be used to help\
+          \ the end user to install the native application. May be unset/empty."
+    description: "Cloud store Server 'Native App Info' document and element type."
+    example:
+      applicationScheme: "applicationScheme"
+      applicationLocator: "applicationLocator"
+      platform: "platform"
+      supported: "supported"
+  FileSystemRequestInfo:
+    type: "object"
+    properties:
+      itemCount:
+        type: "number"
+        description: "The number of items to return. Defaults to -1[All]"
+      itemStartRow:
+        type: "number"
+        description: "The row number at which to start returning data. Used for pagination.\
+          \ Defaults to 0"
+      itemsSortField:
+        type: "string"
+        description: "Field Name on which to sort the records, default will be file\
+          \ name."
+      itemsSortOrder:
+        type: "string"
+        description: "ASC/DESC for ascending or descending sort. Defaults to Asc."
+      uri:
+        type: "string"
+        description: "The object is identified by the uri parameter. If the uri parameter\
+          \ is not set or is empty, then the method should return information about\
+          \ the root or default file system."
+      queryText:
+        type: "string"
+        description: "query keywords - search criteria."
+    description: "File system information request information."
+    example:
+      itemsSortOrder: "itemsSortOrder"
+      queryText: "queryText"
+      itemStartRow: 6.02745618307040320615897144307382404804229736328125
+      itemsSortField: "itemsSortField"
+      uri: "uri"
+      itemCount: 0.80082819046101150206595775671303272247314453125
+  FileSystemResponseInfo:
+    type: "object"
+    properties:
+      numItems:
+        type: "number"
+        description: "The number of items returned in response"
+      hasMoreItems:
+        type: "boolean"
+        description: "This is true if the request did not return all of the item.\
+          \ This occurs when itemsCount is reached and there are additional items\
+          \ that could have been returned."
+      totalItemsCount:
+        type: "number"
+        description: "The total number of items available."
+      fileSystemInfo:
+        $ref: "#/definitions/FilesystemInfo"
+    description: "File system information response Object."
+    example:
+      totalItemsCount: 6.02745618307040320615897144307382404804229736328125
+      hasMoreItems: true
+      numItems: 0.80082819046101150206595775671303272247314453125
+      fileSystemInfo:
+        lastModifiedTimeStamp: 5.63737665663332876420099637471139430999755859375
+        isThumbnailUrlPrivate: true
+        additionalInformation:
+          name: "name"
+          value: "value"
+        extension: "extension"
+        creator: "creator"
+        parentUri: "parentUri"
+        browseURL: "browseURL"
+        lastModifiedBy: "lastModifiedBy"
+        createdTimeStamp: 5.962133916683182377482808078639209270477294921875
+        directoryContents:
+        - null
+        - null
+        description: "description"
+        mimeType: "mimeType"
+        uri: "uri"
+        version: "version"
+        size: 1.46581298050294517310021547018550336360931396484375
+        name: "name"
+        isDirectory: true
+        thumbnailURL: "thumbnailURL"
+  FilesystemInfo:
+    type: "object"
+    properties:
+      uri:
+        type: "string"
+        description: "Uniform resource identifier for the file system object. This\
+          \ identifier is used internally between the connector client and server\
+          \ and is not intended to be used by the end-user. The format of this URI\
+          \ is up to the connector. For example, it could be a numeric object ID,\
+          \ a pathname, or a URL. The client will use this URI to identify the file\
+          \ system object in other operations."
+      parentUri:
+        type: "string"
+        description: "Uniform resource identifier for the parent file system object.\
+          \ This identifier is used internally between the connector client and server\
+          \ and is not intended to be used by the end-user. The format of this URI\
+          \ is up to the connector. For example, it could be a numeric object ID,\
+          \ a pathname, or a URL. The client will use this URI to identify the file\
+          \ system object in other operations."
+      name:
+        type: "string"
+        description: "The name of the file system object. This could be a directory\
+          \ name or a file name (not the full pathname). This name is intended for\
+          \ the end-user."
+      description:
+        type: "string"
+        description: "Description of the file.  May be unset if the description is\
+          \ unknown."
+      isDirectory:
+        type: "boolean"
+        description: "Whether or not the file system object a directory."
+      size:
+        type: "number"
+        description: "The size of the file in bytes. May be null if the file size\
+          \ is unknown or not applicable to the file system object. This will be ignored\
+          \ if <code>isDirectory</code> is true."
+      mimeType:
+        type: "string"
+        description: "The MIME type of the file. May be unset if the MIME type is\
+          \ unknown."
+      extension:
+        type: "string"
+        description: "File extension. May be unset if the extension is unknown."
+      creator:
+        type: "string"
+        description: "The original author of the file. May be unset if it unknown."
+      createdTimeStamp:
+        type: "number"
+        description: "The created time of the file or directory in Unix time format\
+          \ (seconds since the unix epoch; NOT Java milliseconds)."
+      lastModifiedBy:
+        type: "string"
+        description: "User name who last modified the file. May be unset if it unknown."
+      lastModifiedTimeStamp:
+        type: "number"
+        description: "The last modification time of the file or directory in Unix\
+          \ time format (seconds since the unix epoch; NOT Java milliseconds). Do\
+          \ not set this parameter if last modified user information is not available"
+      browseURL:
+        type: "string"
+        description: "URL for the end-user to browse the file system object. This\
+          \ is normally a URL  to the service provider when the user can view or edit\
+          \ the contents of a file or browse the contents of a directory. Leave unset\
+          \ if there is no such URL for the file system object."
+      isThumbnailUrlPrivate:
+        type: "boolean"
+        description: "True : If thumbnail of a file will get fetch via connector otherwise\
+          \ false"
+      thumbnailURL:
+        type: "string"
+        description: "If isDirectory, the immediate contents of the directory. This\
+          \ should not recurse beyond the level of file system objects contained in\
+          \ this directory."
+      version:
+        type: "string"
+        description: "Version of the file system object."
+      directoryContents:
+        type: "array"
+        description: "If isDirectory, the immediate contents of the directory. This\
+          \ should not recurse beyond the level of file system objects contained in\
+          \ this directory."
+        items:
+          $ref: "#/definitions/FilesystemInfo"
+      additionalInformation:
+        $ref: "#/definitions/FilesystemInfo_additionalInformation"
+    description: "Information about a file system object"
+    example:
+      lastModifiedTimeStamp: 5.63737665663332876420099637471139430999755859375
+      isThumbnailUrlPrivate: true
+      additionalInformation:
+        name: "name"
+        value: "value"
+      extension: "extension"
+      creator: "creator"
+      parentUri: "parentUri"
+      browseURL: "browseURL"
+      lastModifiedBy: "lastModifiedBy"
+      createdTimeStamp: 5.962133916683182377482808078639209270477294921875
+      directoryContents:
+      - null
+      - null
+      description: "description"
+      mimeType: "mimeType"
+      uri: "uri"
+      version: "version"
+      size: 1.46581298050294517310021547018550336360931396484375
+      name: "name"
+      isDirectory: true
+      thumbnailURL: "thumbnailURL"
+  CreateAuthorizationResponseInfo_fieldValueMap:
+    properties:
+      name:
+        type: "string"
+        description: "The property name. Required."
+      value:
+        type: "string"
+        description: "The property value."
+    description: "Any updates to the connector-settable custom fields."
+    example:
+      name: "name"
+      value: "value"
+  FilesystemInfo_additionalInformation:
+    properties:
+      name:
+        type: "string"
+        description: "The property name. Required."
+      value:
+        type: "string"
+        description: "The property value."
+    description: "Apart from regular meta data if connector wants to set additional\
+      \ information."
+    example:
+      name: "name"
+      value: "value"
